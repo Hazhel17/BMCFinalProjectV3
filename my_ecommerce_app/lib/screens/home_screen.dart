@@ -8,7 +8,7 @@ import 'admin_panel_screen.dart';
 import '../models/product_model.dart';
 import '../widgets/product_card.dart';
 import '../screens/product_detail_screen.dart';
-import 'order_history_screen.dart';
+import 'order_history_screen.dart'; // 1. ADD THIS (using a relative path now) [cite: 165]
 
 
 class HomeScreen extends StatefulWidget {
@@ -106,125 +106,123 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        //using the user's email if logged in
-        title: const Text('Manga & Comics Shop'),
-        centerTitle: true,
-        actions: [
-          // 1. Cart Icon: Hide if user is admin
-          if (_userRole != 'admin')
-            Consumer<CartProvider>(
-              builder: (context, cart, child) {
-                return Badge(
-                  label: Text(cart.itemCount.toString()),
-                  isLabelVisible: cart.itemCount > 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.shopping_cart),
-                    onPressed: () async {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const CartScreen()),
-                      );
-                      setState(() {});
-                    },
-                  ),
-                );
-              },
-            ),
+        //using the user's email if logged in [cite: 173]
+          title: const Text('Manga & Comics Shop'),
+          centerTitle: true,
+          actions: [
+      // 1. Your existing Cart Icon [cite: 174]
+      Consumer<CartProvider>(
+      builder: (context, cart, child) {
+    return Badge(
+    label: Text(cart.itemCount.toString()),
+    isLabelVisible: cart.itemCount > 0,
+    child: IconButton(
+    icon: const Icon(Icons.shopping_cart),
+    onPressed: () async {
+    await Navigator.of(context).push(
+    MaterialPageRoute(builder: (context) => const CartScreen()),
+    );
+    setState(() {});
+    },
+    ),
+    );
+    },
+    ),
 
-          // 2. Orders Icon: Hide if user is admin
-          if (_userRole != 'admin')
-            IconButton(
-              icon: const Icon(Icons.receipt_long), // A "receipt" icon
-              tooltip: 'My Orders',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const OrderHistoryScreen(),
-                  ),
-                );
-              },
-            ),
+    // 2. --- ADD THIS NEW BUTTON (Order History)
+    IconButton(
+    icon: const Icon(Icons.receipt_long), // A "receipt" icon [cite: 180]
+    tooltip: 'My Orders',
+    onPressed: () { //[cite: 182]
+    Navigator.of(context).push( //[cite: 183]
+    MaterialPageRoute( //[cite: 184]
+    builder: (context) => const OrderHistoryScreen(), //[cite: 185]
+    ),
+    );
+    },
+    ),
 
-          // 3. Admin Icon: Show only if user is admin (existing logic)
-          if (_userRole == 'admin')
-            IconButton(
-              icon: Icon(Icons.admin_panel_settings, color: theme.colorScheme.onSurface,),
-              tooltip: 'Admin Panel',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const AdminPanelScreen()),
-                );
-              },
-            ),
+    // 3. Your existing Admin Icon (if admin) [cite: 190]
+    if (_userRole == 'admin')
+    IconButton(
+    icon: Icon(Icons.admin_panel_settings, color: theme.colorScheme.onSurface,),
+    tooltip: 'Admin Panel',
+    onPressed: () {
+    Navigator.of(context).push(
+    MaterialPageRoute(builder: (context) => const AdminPanelScreen()),
+    );
+    },
+    ),
 
-          // 4. Logout Icon (Visible for all)
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: _signOut,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: _categories.map((category) {
-                return _buildCategoryButton(category);
-              }).toList(),
-            ),
-          ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _getProductStream(),
-              builder: (context, snapshot) {
+    // 4. Your existing Logout Icon [cite: 195]
+    IconButton(
+    icon: const Icon(Icons.logout),
+    tooltip: 'Logout',
+    onPressed: _signOut,
+    ),
+    ],
+    ),
+    body: Column(
+    children: [
+    Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+    child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: _categories.map((category) {
+    return _buildCategoryButton(category);
+    }).toList(),
+    ),
+    ),
+    Expanded(
+    child: StreamBuilder<QuerySnapshot>(
+    stream: _getProductStream(),
+    builder: (context, snapshot) {
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                final documents = snapshot.data!.docs;
-                if (documents.isEmpty) {
-                  return Center(
-                    child: Text('No $_selectedCategory products found.', textAlign: TextAlign.center),
-                  );
-                }
-                return GridView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemCount: documents.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 7,
-                    mainAxisSpacing:7,
-                    childAspectRatio: 0.90,
-                  ),
-                  itemBuilder: (context, index) {
-                    final productDoc = documents[index];
-                    final productData = productDoc.data() as Map<String, dynamic>;
-                    final product = Product.fromMap(productData, productDoc.id);
+    if (snapshot.connectionState == ConnectionState.waiting) {
+    return const Center(child: CircularProgressIndicator());
+    }
+    if (snapshot.hasError) {
+    return Center(child: Text('Error: ${snapshot.error}'));
+    }
+    final documents = snapshot.data!.docs;
+    if (documents.isEmpty) {
+    return Center(
+    child: Text('No $_selectedCategory products found.', textAlign: TextAlign.center),
+    );
+    }
+    return GridView.builder(
+    padding: const EdgeInsets.all(10),
+    itemCount: documents.length,
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 4,
+    crossAxisSpacing: 7,
+    mainAxisSpacing:7,
+    childAspectRatio: 0.90,
+    ),
+    itemBuilder: (context, index) {
+    final productDoc = documents[index];
+    final productData = productDoc.data() as Map<String, dynamic>;
+    final product = Product.fromMap(productData, productDoc.id);
 
-                    return ProductCard(
-                      name: product.name,
-                      price: product.price,
-                      imageUrl: product.imageUrl,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ProductDetailScreen(product: product),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+    return ProductCard(
+    name: product.name,
+    price: product.price,
+    imageUrl: product.imageUrl,
+    onTap: () {
+    Navigator.of(context).push(
+    MaterialPageRoute(
+    builder: (context) => ProductDetailScreen(product: product),
+    ),
+    );
+    },
+    );
+    },
+    );
+    },
+    ),
+    ),
+    ],
+    ),
     );
   }
 }
